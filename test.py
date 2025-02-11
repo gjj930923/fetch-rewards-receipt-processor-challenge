@@ -73,9 +73,60 @@ def test_post_receipt_and_retrive_points():
         response = requests.get(f"{BASE_URL}/receipts/{id}/points")
         assert response.status_code == 200
         assert str(response.json()) == "{'points': " + str(exp_points) + "}"
-    print("✅ Testing post receipt with valid data - Passed")
+        print(f"✅ Testing post receipt with valid data ({i + 1} of {len(RECEIPT_EXAMPLES)}) - Passed")
+
+def test_post_receipt_with_invalid_retailer():
+    receipt = RECEIPT_EXAMPLES[0] | {"retailer": "Target!@#"}
+    response = requests.post(f"{BASE_URL}/receipts/process", json=receipt)
+    assert response.status_code == 400
+    assert str(response.json()) == "{'detail': 'The receipt is invalid.'}"
+    print(f"✅ Testing post receipt with invalid retailer - Passed")
+
+def test_post_receipt_with_invalid_purchase_date():
+    receipt = RECEIPT_EXAMPLES[0] | {"purchaseDate": "2025-32-01"}
+    response = requests.post(f"{BASE_URL}/receipts/process", json=receipt)
+    assert response.status_code == 400
+    assert str(response.json()) == "{'detail': 'The receipt is invalid.'}"
+    print(f"✅ Testing post receipt with invalid purchase date - Passed")
+
+def test_post_receipt_with_invalid_purchase_time():
+    receipt = RECEIPT_EXAMPLES[0] | {"purchaseTime": "25:01"}
+    response = requests.post(f"{BASE_URL}/receipts/process", json=receipt)
+    assert response.status_code == 400
+    assert str(response.json()) == "{'detail': 'The receipt is invalid.'}"
+    print(f"✅ Testing post receipt with invalid purchase time - Passed")
+
+def test_post_receipt_with_no_item():
+    receipt = RECEIPT_EXAMPLES[0] | {"items": []}
+    response = requests.post(f"{BASE_URL}/receipts/process", json=receipt)
+    assert response.status_code == 400
+    assert str(response.json()) == "{'detail': 'The receipt is invalid.'}"
+    print(f"✅ Testing post receipt with no item - Passed")
+
+def test_post_receipt_with_invalid_item_price():
+    receipt = RECEIPT_EXAMPLES[0] | {"items": [{
+      "shortDescription": "Mountain Dew 12PK",
+      "price": "-1"
+    }]}
+    response = requests.post(f"{BASE_URL}/receipts/process", json=receipt)
+    assert response.status_code == 400
+    assert str(response.json()) == "{'detail': 'The receipt is invalid.'}"
+    print(f"✅ Testing post receipt with invalid item price - Passed")
+
+def test_post_receipt_with_invalid_total_price():
+    receipt = RECEIPT_EXAMPLES[0] | {"total": "1.234"}
+    response = requests.post(f"{BASE_URL}/receipts/process", json=receipt)
+    assert response.status_code == 400
+    assert str(response.json()) == "{'detail': 'The receipt is invalid.'}"
+    print(f"✅ Testing post receipt with invalid total price - Passed")
 
 if __name__ == "__main__":
     test_root_url()
     test_get_points_with_nonexisting_id()
     test_post_receipt_and_retrive_points()
+    test_post_receipt_with_invalid_retailer()
+    test_post_receipt_with_invalid_purchase_date()
+    test_post_receipt_with_invalid_purchase_time()
+    test_post_receipt_with_no_item()
+    test_post_receipt_with_invalid_item_price()
+    test_post_receipt_with_invalid_total_price()

@@ -10,6 +10,8 @@ def read_root():
 
 @app.post("/receipts/process")
 def process_receipt(receipt: Receipt):
+    if not Services.validate_receipt(receipt):
+        raise HTTPException(status_code=400, detail="The receipt is invalid.")
     receipt_id = Services.calculate_points_and_generate_id(receipt)
     return {"id": receipt_id}
 

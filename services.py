@@ -1,5 +1,7 @@
 from schemas import Receipt
 import uuid
+import re
+from datetime import datetime
 
 class Services:
     receipts = {}
@@ -22,10 +24,12 @@ class Services:
             if len(item.shortDescription.strip()) % 3 == 0:
                 points += int(float(item.price) * 0.2 + 0.999)
         # 6 points if the day in the purchase date is odd.
-        if receipt.purchaseDate.day % 2 == 1:
+        purchaseDate = datetime.strptime(receipt.purchaseDate, '%Y-%m-%d').date()
+        if purchaseDate.day % 2 == 1:
             points += 6
         # 10 points if the time of purchase is after 2:00pm and before 4:00pm.
-        if receipt.purchaseTime.hour >= 14 and receipt.purchaseTime.hour < 16:
+        purchaseTime = datetime.strptime(receipt.purchaseTime, '%H:%M').time()
+        if purchaseTime.hour >= 14 and purchaseTime.hour < 16:
             points += 10
         return points
 
@@ -38,3 +42,27 @@ class Services:
     @classmethod
     def retrieve_points(cls, id: str) -> int:
         return cls.receipts[id] if id in cls.receipts else None
+
+    @staticmethod
+    def validate_receipt(receipt: Receipt) -> bool:
+        # Validate retailer name.
+        if not re.match("^[\\w\\s\\-&]+$", receipt.retailer):
+            return False
+        # Validate total amount.
+        if not re.match("^\\d+\\.\\d{2}$", receipt.total):
+            return False
+        # Validate item size, descriptions and prices.
+        if len(receipt.items) == 0:
+            return False
+        for item in receipt.items:
+            if not re.match("^[\\w\\s\\-]+$", item.shortDescription):
+                return False
+            if not re.match("^\\d+\\.\\d{2}$", item.price):
+                return False
+        # Validate purchase date and time.
+        try :
+            datetime.strptime(receipt.purchaseDate, '%Y-%m-%d').date()
+            datetime.strptime(receipt.purchaseTime, '%H:%M').time()
+        except ValueError:
+            return False
+        return True
