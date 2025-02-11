@@ -80,3 +80,31 @@ This service exposes three RESTful endpoints. No authentication is required.
 ```
 #### **Errors**
 * 404 Not Found if the given `id` does not exist.
+
+## Test Endpoints
+
+The `test.py` script contains test cases to validate the API endpoints. Before running the tests, ensure you have Python 3 and the `requests` package installed.
+
+### **Installation & Execution**
+```sh
+# Install the `requests` package.
+pip install requests
+
+# Run the test script.
+python3 test.py
+```
+
+If any test case fails, the script will indicate the failure. A successful test run should produce the following output:
+
+```
+✅ Testing root url - Passed
+✅ Testing get points with nonexisting id - Passed
+✅ Testing post receipt with valid data (1 of 2) - Passed
+✅ Testing post receipt with valid data (2 of 2) - Passed
+✅ Testing post receipt with invalid retailer - Passed
+✅ Testing post receipt with invalid purchase date - Passed
+✅ Testing post receipt with invalid purchase time - Passed
+✅ Testing post receipt with no item - Passed
+✅ Testing post receipt with invalid item price - Passed
+✅ Testing post receipt with invalid total price - Passed
+```
